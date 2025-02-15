@@ -4,32 +4,47 @@ on:
   pull_request:
     branches:
       - main
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, closed]  # 'closed' triggers on PR merge or close
 
 jobs:
   deploy-to-pr-preview:
+    if: github.event.action != 'closed'  # Only run on open/sync/reopen, not on close
     runs-on: ubuntu-latest
 
     steps:
     - name: Check out the PR branch
       uses: actions/checkout@v2
       with:
-        ref: ${{ github.head_ref }}  # Get the PR source branch (e.g., feature branch)
-    
+        ref: ${{ github.head_ref }}
+
     - name: Deploy to GitHub Pages (using the PR source branch)
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./
-        destination_dir: pr/${{ github.event.pull_request.number }}/
+        publish_dir: ./  
+        destination_dir: pr/${{ github.event.pull_request.number }}/  
         publish_branch: gh-pages
         keep_files: true
 
-    - name: Clean up PR preview after merge
-      if: github.event.pull_request.merged == true  # Check if PR is merged
+    - name: Output Preview URL
       run: |
-        echo "Cleaning up the preview data for PR #${{ github.event.pull_request.number }}..."
+        echo "PR Preview is available at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr/${{ github.event.pull_request.number }}/"
+
+  cleanup-preview:
+    if: github.event.pull_request.merged == true  # Run only when PR is merged
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout GitHub Pages branch
+      uses: actions/checkout@v2
+      with:
+        ref: gh-pages  # The branch where previews are deployed
+
+    - name: Remove PR preview folder
+      run: |
         rm -rf pr/${{ github.event.pull_request.number }}/
-        git add -A
-        git commit -m "Clean up preview data for PR #${{ github.event.pull_request.number }}"
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add .
+        git commit -m "Cleanup PR preview for PR #${{ github.event.pull_request.number }}" || echo "No changes to commit"
         git push origin gh-pages
