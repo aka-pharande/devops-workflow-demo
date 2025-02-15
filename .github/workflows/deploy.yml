@@ -28,4 +28,4 @@ jobs:
 
       - name: Output Preview URL
         run: |
-          echo "PR Preview is available at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+          echo "Application is available at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
