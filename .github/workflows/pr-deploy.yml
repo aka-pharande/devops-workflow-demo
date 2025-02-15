@@ -1,0 +1,82 @@
+name: Deploy for PRs
+
+on:
+  pull_request:
+    branches:
+      - main  # Trigger this on pull requests targeting the main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Set up Node.js or any other environment you need for tests (you may not need this for a static site)
+      - name: Set up Node.js (for testing)
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'  # Update based on your requirements
+
+      # Install dependencies (add this if you have npm/yarn or other dependencies)
+      - name: Install dependencies
+        run: |
+          npm install
+
+      # Run tests
+      - name: Run tests
+        run: |
+          npm test  # Replace with your actual test command (e.g., jest or any testing framework)
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build  # This ensures the tests run before deployment
+
+    steps:
+      # Checkout the code again (needed for the deployment job)
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Set up GitHub Pages for deployment
+      - name: Set up GitHub Pages
+        run: |
+          # Set up a temporary testing branch (or directory) for deployment
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://github.com/${{ github.repository }}.git
+
+          # Generate a unique branch name for testing purposes
+          TEST_BRANCH="pr-${{ github.event.pull_request.number }}"
+          git checkout -b $TEST_BRANCH
+
+          # Move or copy the required files to the deployment directory (e.g., docs folder)
+          cp -r * ./docs  # Assuming the root of the project contains your static files
+
+          # Commit the changes to this temporary branch
+          git add .
+          git commit -m "Deploy PR testing version"
+
+          # Push changes to GitHub
+          git push origin $TEST_BRANCH
+
+      # Deploy to GitHub Pages (or use other hosting services)
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: $TEST_BRANCH  # Push to a testing branch for the PR
+          folder: docs  # Folder containing the built/compiled files
+          target_branch: gh-pages  # Can be any branch for testing
+          
+  cleanup:
+    runs-on: ubuntu-latest
+    needs: deploy  # Clean up after deployment
+
+    steps:
+      # Clean up the temporary testing branch
+      - name: Clean up testing branch
+        run: |
+          git remote set-url origin https://github.com/${{ github.repository }}.git
+          git fetch origin
+          git push origin --delete $TEST_BRANCH

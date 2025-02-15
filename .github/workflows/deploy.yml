@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Clean up previous worktree
+      - name: Clean up previous worktree folder
         run: |
           rm -rf github-pages-deploy-action-temp-deployment-folder
           git worktree prune
@@ -25,6 +25,8 @@ jobs:
           folder: ./
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Output URL of the deployed page
+      - name: Commit changes to remove temp folder
         run: |
-          echo "Your site has been deployed at https://aka-pharande.github.io/devops-workflow-demo/"
+          git rm -r --cached github-pages-deploy-action-temp-deployment-folder
+          git commit -m "Remove temporary deployment folder"
+          git push
