@@ -13,18 +13,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Clean up previous worktree
+      - name: Clean up previous worktree folder
         run: |
           rm -rf github-pages-deploy-action-temp-deployment-folder
           git worktree prune
 
       - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          branch: main
-          folder: ./
-          token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          publish_branch: gh-pages
+          keep_files: true
 
-      - name: Output URL of the deployed page
+      - name: Commit changes to remove temp folder
         run: |
-          echo "Your site has been deployed at https://aka-pharande.github.io/devops-workflow-demo/"
+          git rm -r --cached github-pages-deploy-action-temp-deployment-folder
+          git commit -m "Remove temporary deployment folder"
+          git push

@@ -1,0 +1,30 @@
+name: PR Deployment to GitHub Pages
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+jobs:
+  deploy-to-pr-preview:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out the PR branch
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.head_ref }}  # Get the PR source branch (e.g., feature branch)
+    
+    - name: Deploy to GitHub Pages (using the PR source branch)
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
+        destination_dir: pr/${{ github.event.pull_request.number }}/
+        publish_branch: gh-pages
+        keep_files: true
+
+    # - name: Clean up PR preview (optional)
+    #   if: github.event.pull_request.merged == true
+    #   run: echo "Clean up the preview environment if needed"
