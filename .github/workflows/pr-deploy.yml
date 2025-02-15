@@ -26,6 +26,10 @@ jobs:
         publish_branch: gh-pages
         keep_files: true
 
+    - name: Output Preview URL
+      run: |
+        echo "PR Preview is available at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr/${{ github.event.pull_request.number }}/"
+
   cleanup-preview:
     if: github.event.pull_request.merged == true  # Run only when PR is merged
     runs-on: ubuntu-latest

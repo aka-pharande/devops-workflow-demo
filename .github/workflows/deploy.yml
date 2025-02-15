@@ -25,3 +25,7 @@ jobs:
           publish_dir: ./
           publish_branch: gh-pages
           keep_files: true
+
+      - name: Output Preview URL
+        run: |
+          echo "PR Preview is available at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
