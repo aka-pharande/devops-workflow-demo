@@ -25,6 +25,11 @@ jobs:
         publish_branch: gh-pages
         keep_files: true
 
-    # - name: Clean up PR preview (optional)
-    #   if: github.event.pull_request.merged == true
-    #   run: echo "Clean up the preview environment if needed"
+    - name: Clean up PR preview after merge
+      if: github.event.pull_request.merged == true  # Check if PR is merged
+      run: |
+        echo "Cleaning up the preview data for PR #${{ github.event.pull_request.number }}..."
+        rm -rf pr/${{ github.event.pull_request.number }}/
+        git add -A
+        git commit -m "Clean up preview data for PR #${{ github.event.pull_request.number }}"
+        git push origin gh-pages
