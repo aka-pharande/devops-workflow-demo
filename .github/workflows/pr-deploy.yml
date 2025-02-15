@@ -39,27 +39,31 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Set up GitHub Pages for deployment
+        # Set up GitHub Pages for deployment
       - name: Set up GitHub Pages
         run: |
-          # Set up a temporary testing branch (or directory) for deployment
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://github.com/${{ github.repository }}.git
+            # Set up a temporary testing branch (or directory) for deployment
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git remote set-url origin https://github.com/${{ github.repository }}.git
 
-          # Generate a unique branch name for testing purposes
-          TEST_BRANCH="pr-${{ github.event.pull_request.number }}"
-          git checkout -b $TEST_BRANCH
+            # Generate a unique branch name for testing purposes
+            TEST_BRANCH="pr-${{ github.event.pull_request.number }}"
+            git checkout -b $TEST_BRANCH
 
-          # Move or copy the required files to the deployment directory (e.g., docs folder)
-          cp -r * ./docs  # Assuming the root of the project contains your static files
+            # Create the 'docs' directory if it doesn't exist
+            mkdir -p docs
 
-          # Commit the changes to this temporary branch
-          git add .
-          git commit -m "Deploy PR testing version"
+            # Move or copy the required files to the deployment directory (e.g., docs folder)
+            cp -r * ./docs  # Assuming the root of the project contains your static files
 
-          # Push changes to GitHub
-          git push origin $TEST_BRANCH
+            # Commit the changes to this temporary branch
+            git add .
+            git commit -m "Deploy PR testing version"
+
+            # Push changes to GitHub
+            git push origin $TEST_BRANCH
+
 
       # Deploy to GitHub Pages (or use other hosting services)
       - name: Deploy to GitHub Pages
