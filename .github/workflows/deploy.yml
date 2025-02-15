@@ -3,23 +3,28 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # This will trigger the action when changes are pushed to the 'main' branch
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Deploy to GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@v4
-      with:
-        branch: main  # The branch where your GitHub Pages site will be deployed
-        folder: ./         # The folder that contains your static files (e.g., the root folder for HTML, CSS, JS)
-        token: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Output URL of the deployed page
-      run: |
-        echo "Your site has been deployed at https://aka-pharande.github.io/devops-workflow-demo/"
+      - name: Clean up previous worktree
+        run: |
+          rm -rf github-pages-deploy-action-temp-deployment-folder
+          git worktree prune
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: main
+          folder: ./
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Output URL of the deployed page
+        run: |
+          echo "Your site has been deployed at https://aka-pharande.github.io/devops-workflow-demo/"
