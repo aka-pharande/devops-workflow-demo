@@ -31,7 +31,8 @@ jobs:
         echo "PR Preview is available at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr/${{ github.event.pull_request.number }}/"
 
   cleanup-preview:
-    if: github.event.pull_request.merged == true  # Run only when PR is merged
+    # if: github.event.pull_request.merged == false  # Run only when PR is merged
+    if: false
     runs-on: ubuntu-latest
 
     steps:
